@@ -1,0 +1,215 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <div class="eyebrow">QUALITY ASSURANCE · HOSPITAL SYSTEMS</div>
+        <h1>Quality Overview</h1>
+        <p>Monitor the quality of the hospital software development lifecycle.</p>
+    </div>
+
+    <div class="heading-actions">
+        <a class="btn btn-secondary" href="{{ url_for('export') }}">
+            Export defects
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('defects') }}#new-defect">
+            + Record defect
+        </a>
+    </div>
+</div>
+
+<div class="scope-note">
+    <strong>Project scope:</strong>
+    This QMS manages software development quality. It is not a hospital
+    operational application.
+</div>
+
+<div class="stat-grid">
+    <article class="stat-card">
+        <div class="stat-top">
+            <span>Open Defects</span>
+            <span class="stat-icon coral">!</span>
+        </div>
+        <div class="stat-value">{{ stats.open_defects }}</div>
+        <div class="stat-caption">Require investigation or action</div>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-top">
+            <span>Critical Defects</span>
+            <span class="stat-icon red">!</span>
+        </div>
+        <div class="stat-value">{{ stats.critical_defects }}</div>
+        <div class="stat-caption">Must be assessed before release</div>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-top">
+            <span>Review Completion</span>
+            <span class="stat-icon blue">✓</span>
+        </div>
+        <div class="stat-value">{{ stats.review_rate }}%</div>
+        <div class="stat-caption">
+            {{ stats.reviews_done }} of {{ stats.reviews_total }} reviews decided
+        </div>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-top">
+            <span>Test Pass Rate</span>
+            <span class="stat-icon mint">↗</span>
+        </div>
+        <div class="stat-value">{{ stats.test_rate }}%</div>
+        <div class="stat-caption">
+            {{ stats.tests_passed }} passed of {{ stats.tests_total }} executed
+        </div>
+    </article>
+</div>
+
+<div class="two-col">
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Quality Signals</h2>
+                <p>Indicators calculated from saved QMS records</p>
+            </div>
+            <span class="pill pill-mint">Live calculations</span>
+        </div>
+
+        <div class="metric-line">
+            <span>Review completion</span>
+            <div class="progress">
+                <i style="width: {{ stats.review_rate }}%"></i>
+            </div>
+            <b>{{ stats.review_rate }}%</b>
+        </div>
+
+        <div class="metric-line">
+            <span>Test pass rate</span>
+            <div class="progress green">
+                <i style="width: {{ stats.test_rate }}%"></i>
+            </div>
+            <b>{{ stats.test_rate }}%</b>
+        </div>
+
+        <div class="metric-line">
+            <span>Approved quality plans</span>
+            <div class="progress">
+                <i style="width: {{ (stats.plans_approved / stats.plans_total * 100)|round if stats.plans_total else 0 }}%"></i>
+            </div>
+            <b>
+                {{ (stats.plans_approved / stats.plans_total * 100)|round if stats.plans_total else 0 }}%
+            </b>
+        </div>
+
+        <div class="metric-line">
+            <span>Open CAPA</span>
+            <div class="progress">
+                <i style="width: {{ 0 if stats.capa_open else 100 }}%"></i>
+            </div>
+            <b>{{ stats.capa_open }}</b>
+        </div>
+    </section>
+
+    <section class="panel lifecycle-panel">
+        <div class="panel-heading">
+            <div>
+                <h2>QMS Lifecycle</h2>
+                <p>Our seven-stage quality process</p>
+            </div>
+        </div>
+
+        <div class="lifecycle">
+            <div class="life-step">
+                <span>▤</span><b>PLAN</b><small>Objectives</small>
+            </div>
+            <div class="life-step">
+                <span>☷</span><b>DEFINE</b><small>Procedures</small>
+            </div>
+            <div class="life-step">
+                <span>▶</span><b>EXECUTE</b><small>Activities</small>
+            </div>
+            <div class="life-step">
+                <span>✓</span><b>VERIFY</b><small>Evidence</small>
+            </div>
+            <div class="life-step">
+                <span>▥</span><b>MEASURE</b><small>Metrics</small>
+            </div>
+            <div class="life-step">
+                <span>▤</span><b>REPORT</b><small>Status</small>
+            </div>
+            <div class="life-step">
+                <span>↻</span><b>IMPROVE</b><small>CAPA</small>
+            </div>
+        </div>
+
+        <div class="priority-note">
+            <strong>Priority quality factors:</strong>
+            Patient safety, data integrity, security, reliability,
+            and traceability.
+        </div>
+    </section>
+</div>
+
+<section class="panel recent-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Recent Quality Issues</h2>
+            <p>Latest defects recorded in the QMS</p>
+        </div>
+        <a class="btn btn-soft" href="{{ url_for('defects') }}">
+            View all defects →
+        </a>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>DEFECT</th>
+                    <th>SEVERITY</th>
+                    <th>STATUS</th>
+                    <th>OWNER</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for defect in recent %}
+                <tr>
+                    <td>
+                        <strong>{{ defect.title }}</strong>
+                        <small>
+                            DEF-{{ '%03d'|format(defect.id) }}
+                            · {{ defect.category }}
+                        </small>
+                    </td>
+                    <td>
+                        <span class="badge severity-{{ defect.severity|lower }}">
+                            {{ defect.severity }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge status-{{ defect.status|lower|replace(' ','-') }}">
+                            {{ defect.status }}
+                        </span>
+                    </td>
+                    <td>{{ defect.owner }}</td>
+                    <td>
+                        <a class="text-link" href="{{ url_for('defects') }}">
+                            Open →
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="empty">
+                        No defects recorded.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
